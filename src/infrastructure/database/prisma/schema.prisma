@@ -1,0 +1,85 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+// prisma tự động đọc file .env dù cho chưa cài .dotenv, nhưng chỉ đọc được giá trị 
+// trong env khi prisma đã start lên, những chỗ chưa start thì chịu
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL") 
+}
+
+model Voucher {
+  id            String        @id @db.Uuid
+  shopId        String?       @map("shop_id") @db.Uuid
+  code          String        @unique @db.VarChar(20)
+  name          String        @db.VarChar(255)
+  description   String        @db.VarChar(2000)
+  discountType  DiscountType  @map("discount_type")
+  discountValue Int           @map("discount_value")
+  startDate     DateTime      @map("start_date") @db.Timestamptz
+  endDate       DateTime      @map("end_date") @db.Timestamptz
+  usageLimit    Int           @map("usage_limit")
+  perUserLimit  Int           @map("per_user_limit")
+  scope         ScopeType
+  isDeleted     Boolean       @default(false) @map("is_deleted")
+  deletedBy     String?       @map("deleted_by") @db.Uuid
+  deletedAt     DateTime?     @map("deleted_at") @db.Timestamptz
+  createdAt     DateTime      @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt     DateTime      @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  voucherUsages     VoucherUsage[]
+  voucherCategories VoucherCategory[]
+  voucherProducts   VoucherProduct[]
+
+  @@map("vouchers")
+}
+
+model VoucherUsage {
+  id        String   @id @default(uuid()) @db.Uuid
+  voucherId String   @map("voucher_id") @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  orderId   String   @map("order_id") @db.Uuid
+  usedAt    DateTime @default(now()) @map("used_at") @db.Timestamptz
+
+  // Relations
+  voucher Voucher @relation(fields: [voucherId], references: [id], onDelete: Cascade)
+
+  @@map("voucher_usages")
+}
+
+// Voucher sàn dạng cho 1 hoặc 1 vài category nhất định mới có bản ghi ở bảng này
+model VoucherCategory {
+  voucherId  String @map("voucher_id") @db.Uuid
+  categoryId String @map("category_id") @db.Uuid
+
+  // Relations
+  voucher  Voucher  @relation(fields: [voucherId], references: [id], onDelete: Cascade)
+
+  @@id([voucherId, categoryId])
+  @@map("voucher_categories")
+}
+
+// Voucher của shop dạng cho 1 hoặc 1 vài product nhất định mới có bản ghi ở bảng này
+model VoucherProduct {
+  voucherId String @map("voucher_id") @db.Uuid
+  productId String @map("product_id") @db.Uuid
+
+  // Relations
+  voucher Voucher @relation(fields: [voucherId], references: [id], onDelete: Cascade)
+
+  @@id([voucherId, productId])
+  @@map("voucher_products")
+}
+
+enum ScopeType {
+  ALL
+  CATEGORY
+  PRODUCT
+}
+
+enum DiscountType {
+  FIXED
+  PERCENT
+}
