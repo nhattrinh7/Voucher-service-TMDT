@@ -2,17 +2,29 @@ import { Module } from '@nestjs/common'
 import { CqrsModule } from '@nestjs/cqrs'
 import { DatabaseModule } from '~/infrastructure/database/database.module'
 import { MessagingModule } from '~/infrastructure/messaging/messaging.module'
-import { CreateVoucherHandler } from './commands/create-voucher/create-voucher.command.handler'
+import { CreateShopVoucherHandler } from './commands/create-shop-voucher/create-shop-voucher.command.handler'
 import { GetShopVouchersHandler } from './queries/get-shop-vouchers/get-shop-vouchers.query.handler'
-import { DeleteVoucherHandler } from './commands/delete-voucher/delete-voucher.command.handler'
+import { SoftDeleteShopVoucherHandler } from './commands/soft-delete-shop-voucher/soft-delete-shop-voucher.command.handler'
+import { UpdateShopVoucherHandler } from './commands/update-shop-voucher/update-shop-voucher.command.handler'
+import { CreateSzoneVoucherHandler } from './commands/create-szone-voucher/create-szone-voucher.command.handler'
+import { SoftDeleteSzoneVoucherHandler } from './commands/soft-delete-szone-voucher/soft-delete-szone-voucher.command.handler'
+import { UpdateSzoneVoucherHandler } from './commands/update-szone-voucher/update-szone-voucher.command.handler'
+import { GetSzoneVouchersHandler } from './queries/get-szone-vouchers/get-szone-vouchers.query.handler'
+import { GetVoucherDetailByIdHandler } from './queries/get-voucher-detail-by-id/get-voucher-detail-by-id.query.handler'
 
 const CommandHandlers = [
-  CreateVoucherHandler,
-  DeleteVoucherHandler
+  CreateShopVoucherHandler,
+  SoftDeleteShopVoucherHandler,
+  UpdateShopVoucherHandler,
+  CreateSzoneVoucherHandler,
+  SoftDeleteSzoneVoucherHandler,
+  UpdateSzoneVoucherHandler
 ]
 
 const QueryHandlers = [
-  GetShopVouchersHandler
+  GetShopVouchersHandler,
+  GetSzoneVouchersHandler,
+  GetVoucherDetailByIdHandler
 ]
 
 const EventHandlers = [

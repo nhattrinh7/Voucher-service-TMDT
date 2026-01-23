@@ -1,22 +1,21 @@
 import { Inject } from '@nestjs/common'
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs'
-import { CreateVoucherCommand } from '~/application/commands/create-voucher/create-voucher.command'
+import { CreateSzoneVoucherCommand } from '~/application/commands/create-szone-voucher/create-szone-voucher.command'
 import { Voucher } from '~/domain/entities/voucher.entity'
 import { VOUCHER_REPOSITORY, type IVoucherRepository } from '~/domain/repositories/voucher.repository.interface'
 
 
-@CommandHandler(CreateVoucherCommand)
-export class CreateVoucherHandler implements ICommandHandler<CreateVoucherCommand, void> {
+@CommandHandler(CreateSzoneVoucherCommand)
+export class CreateSzoneVoucherHandler implements ICommandHandler<CreateSzoneVoucherCommand, void> {
   constructor(
     @Inject(VOUCHER_REPOSITORY)
     private readonly voucherRepository: IVoucherRepository,
   ) {}
 
-  async execute(command: CreateVoucherCommand) {
+  async execute(command: CreateSzoneVoucherCommand) {
     const { body } = command
 
     const voucher = Voucher.create({
-      shopId: body.shopId,
       code: body.code,
       name: body.name,
       description: body.description,
@@ -32,9 +31,9 @@ export class CreateVoucherHandler implements ICommandHandler<CreateVoucherComman
     // Tạo voucher
     const createdVoucher = await this.voucherRepository.create(voucher)
 
-    // Xử lí business logic: Nếu scope là PRODUCT thì lưu thêm vào bảng VoucherProduct
-    if (body.scope === 'PRODUCT' && body.selectedProducts && body.selectedProducts.length > 0) {
-      await this.voucherRepository.createVoucherProducts(createdVoucher.id, body.selectedProducts)
+    // Xử lí business logic: Nếu scope là CATEGORY thì lưu thêm vào bảng VoucherCategory
+    if (body.scope === 'CATEGORY' && body.selectedCategories && body.selectedCategories.length > 0) {
+      await this.voucherRepository.createVoucherCategories(createdVoucher.id, body.selectedCategories)
     }
   }
 }

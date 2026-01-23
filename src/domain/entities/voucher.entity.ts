@@ -1,7 +1,7 @@
 import { AggregateRoot } from '@nestjs/cqrs'
 import { v4 as uuidv4 } from 'uuid'
-import { ScopeType, DiscountType } from '~/domain/enums/voucher.enum'
-import { CreateVoucherBodyDto } from '~/presentation/dtos/voucher.dto'
+import { VoucherScopeType, DiscountType } from '~/domain/enums/voucher.enum'
+import { CreateVoucherBodyDto, UpdateVoucherBodyDto } from '~/presentation/dtos/voucher.dto'
 
 export class Voucher extends AggregateRoot {
   constructor(
@@ -16,7 +16,7 @@ export class Voucher extends AggregateRoot {
     public endDate: Date,
     public usageLimit: number,
     public perUserLimit: number,
-    public scope: ScopeType,
+    public scope: VoucherScopeType,
     public isDeleted: boolean,
     public deletedBy: string | null,
     public deletedAt: Date | null,
@@ -29,7 +29,7 @@ export class Voucher extends AggregateRoot {
   static create(props: CreateVoucherBodyDto): Voucher {
     const shop = new Voucher(
       uuidv4(),
-      props.shopId,
+      props.shopId || null,
       props.code,
       props.name,
       props.description,
@@ -48,5 +48,19 @@ export class Voucher extends AggregateRoot {
     )
     
     return shop
-  } 
+  }
+
+  update(props: UpdateVoucherBodyDto): void {
+    this.code = props.code
+    this.name = props.name
+    this.description = props.description
+    this.discountType = props.discountType
+    this.discountValue = props.discountValue
+    this.startDate = props.startDate
+    this.endDate = props.endDate
+    this.usageLimit = props.usageLimit
+    this.perUserLimit = props.perUserLimit
+    this.scope = props.scope
+    this.updatedAt = new Date()
+  }
 }
