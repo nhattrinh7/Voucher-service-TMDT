@@ -1,10 +1,16 @@
 import { Module } from '@nestjs/common'
 import { ClientsModule, Transport } from '@nestjs/microservices'
+import { CqrsModule } from '@nestjs/cqrs'
 import { MESSAGE_PUBLISHER } from '~/domain/contracts/message-publisher.interface'
 import { RabbitMQPublisher } from '~/infrastructure/messaging/publishers/rabbitmq.publisher'
+import { ValidateVoucherConsumer } from '~/infrastructure/messaging/consumers/validate-voucher.consumer'
+import { ValidateVouchersBatchConsumer } from '~/infrastructure/messaging/consumers/validate-vouchers-batch.consumer'
+import { ReserveVoucherUsageConsumer } from '~/infrastructure/messaging/consumers/reserve-voucher-usage.consumer'
+import { CancelAllReservedVoucherUsagesConsumer } from '~/infrastructure/messaging/consumers/cancel-all-reserved-voucher-usages.consumer'
 
 @Module({
   imports: [
+    CqrsModule,
     ClientsModule.register([
       {
         name: 'NOTIFICATION_CLIENT',
@@ -12,6 +18,15 @@ import { RabbitMQPublisher } from '~/infrastructure/messaging/publishers/rabbitm
         options: {
           urls: ['amqp://admin:admin123@localhost:5672'],
           queue: 'notification_queue',
+          persistent: true,
+        },
+      },
+      {
+        name: 'CATALOG_CLIENT',
+        transport: Transport.RMQ,
+        options: {
+          urls: ['amqp://admin:admin123@localhost:5672'],
+          queue: 'catalog_queue',
           persistent: true,
         },
       },
@@ -23,6 +38,7 @@ import { RabbitMQPublisher } from '~/infrastructure/messaging/publishers/rabbitm
       useClass: RabbitMQPublisher,
     },
   ],
+  controllers: [ValidateVoucherConsumer, ValidateVouchersBatchConsumer, ReserveVoucherUsageConsumer, CancelAllReservedVoucherUsagesConsumer],
   exports: [ClientsModule, MESSAGE_PUBLISHER],
 })
 export class MessagingModule {}

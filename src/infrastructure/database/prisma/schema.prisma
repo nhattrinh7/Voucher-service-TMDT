@@ -10,23 +10,25 @@ datasource db {
 }
 
 model Voucher {
-  id            String        @id @db.Uuid
-  shopId        String?       @map("shop_id") @db.Uuid
-  code          String        @unique @db.VarChar(20)
-  name          String        @db.VarChar(255)
-  description   String        @db.VarChar(2000)
-  discountType  DiscountType  @map("discount_type")
-  discountValue Int           @map("discount_value")
-  startDate     DateTime      @map("start_date") @db.Timestamptz
-  endDate       DateTime      @map("end_date") @db.Timestamptz
-  usageLimit    Int           @map("usage_limit")
-  perUserLimit  Int           @map("per_user_limit")
-  scope         ScopeType
-  isDeleted     Boolean       @default(false) @map("is_deleted")
-  deletedBy     String?       @map("deleted_by") @db.Uuid
-  deletedAt     DateTime?     @map("deleted_at") @db.Timestamptz
-  createdAt     DateTime      @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt     DateTime      @updatedAt @map("updated_at") @db.Timestamptz
+  id               String        @id @db.Uuid
+  shopId           String?       @map("shop_id") @db.Uuid
+  code             String        @unique @db.VarChar(20)
+  name             String        @db.VarChar(255)
+  description      String        @db.VarChar(2000)
+  discountType     DiscountType  @map("discount_type")
+  discountValue    Int           @map("discount_value")
+  minOrderValue    Int           @map("min_order_value") @default(0)
+  maxDiscountValue Int?          @map("max_discount_value")
+  startDate        DateTime      @map("start_date") @db.Timestamptz
+  endDate          DateTime      @map("end_date") @db.Timestamptz
+  usageLimit       Int           @map("usage_limit")
+  perUserLimit     Int           @map("per_user_limit")
+  scope            ScopeType
+  isDeleted        Boolean       @default(false) @map("is_deleted")
+  deletedBy        String?       @map("deleted_by") @db.Uuid
+  deletedAt        DateTime?     @map("deleted_at") @db.Timestamptz
+  createdAt        DateTime      @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt        DateTime      @updatedAt @map("updated_at") @db.Timestamptz
 
   // Relations
   voucherUsages     VoucherUsage[]
@@ -37,11 +39,12 @@ model Voucher {
 }
 
 model VoucherUsage {
-  id        String   @id @default(uuid()) @db.Uuid
-  voucherId String   @map("voucher_id") @db.Uuid
-  userId    String   @map("user_id") @db.Uuid
-  orderId   String   @map("order_id") @db.Uuid
-  usedAt    DateTime @default(now()) @map("used_at") @db.Timestamptz
+  id           String              @id @default(uuid()) @db.Uuid
+  voucherId    String              @map("voucher_id") @db.Uuid
+  userId       String              @map("user_id") @db.Uuid
+  orderId      String?             @map("order_id") @db.Uuid
+  status       VoucherUsageStatus  @default(RESERVED)
+  appliedAt    DateTime            @default(now()) @map("applied_at") @db.Timestamptz
 
   // Relations
   voucher Voucher @relation(fields: [voucherId], references: [id], onDelete: Cascade)
@@ -49,11 +52,25 @@ model VoucherUsage {
   @@map("voucher_usages")
 }
 
+/*
+  - Khi 1 user muốn áp dụng voucher, cần đếm các người khác đã dùng hết lượt chưa, thì đếm các bản ghi RESERVED và CONFIRMED,
+    còn CANCELLED thì ko tính vì đơn hãng đã bị hủy thì coi như chưa dùng voucher
+  - Khi 1 user muốn áp dụng voucher, cần đếm xem bản thân đã hết lượt dùng cho 1 người của voucher chưa
+    thì đếm RESERVED và CONFIRMED, lí do đếm cả RESERVED vì có thể user đó đã đặt đơn nhưng chưa thanh toán ở 1 thiết bị khác
+  - Ở trang áp voucher và chọn địa chỉ giao hàng, chỉ cần mới chọn áp voucher đó thôi là đã phải tạo ra 1 bản ghi RESERVED,
+    chứ không phải sau khi bấm ĐẶT HÀNG thì mới tạo ra bản ghi RESERVED.
+*/
+enum VoucherUsageStatus {
+  RESERVED   // Voucher đang giữ chỗ
+  CONFIRMED  // Đã thanh toán thành công trong trường hợp thanh toán online, đã đặt hàng thanh công trường hợp COD
+  CANCELLED  // Thanh toán WALLET/QRCODE không thành công hoặc đơn hàng bị hủy
+}
+
 // Voucher sàn dạng cho 1 hoặc 1 vài category nhất định mới có bản ghi ở bảng này
 model VoucherCategory {
   voucherId  String @map("voucher_id") @db.Uuid
   categoryId String @map("category_id") @db.Uuid
-
+  
   // Relations
   voucher  Voucher  @relation(fields: [voucherId], references: [id], onDelete: Cascade)
 

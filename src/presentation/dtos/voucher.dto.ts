@@ -14,6 +14,8 @@ export const VoucherSchema = z.object({
   description: z.string(),
   discountType: z.enum(DiscountType),
   discountValue: z.number().nonnegative(),
+  minOrderValue: z.number().nonnegative(), 
+  maxDiscountValue: z.number().nonnegative().optional().nullable(),
   startDate: z.coerce.date(),
   endDate: z.coerce.date(),
   usageLimit: z.number().nonnegative(),
@@ -34,6 +36,8 @@ export const CreateVoucherBodySchema = VoucherSchema.pick({
   description: true,  
   discountType: true,
   discountValue: true,
+  minOrderValue: true,
+  maxDiscountValue: true,
   startDate: true,
   endDate: true,
   usageLimit: true, 
@@ -68,3 +72,24 @@ export const getSzoneVouchersPaginatedQueryDto = z.object({
   status: z.enum(['UPCOMING', 'ACTIVE', 'EXPIRED']).optional(),
 })
 export class GetSzoneVouchersPaginatedQueryDto extends createZodDto(getSzoneVouchersPaginatedQueryDto) {}
+
+//Get Eligible Shop Vouchers 
+export const CartItemSchema = z.object({
+  productId: z.uuid(),
+  productVariantId: z.uuid(),
+  quantity: z.number().int().positive(),
+  price: z.number().nonnegative(),
+})
+
+export const GetEligibleShopVouchersBodySchema = z.object({
+  items: z.array(CartItemSchema).min(1),
+})
+
+export class GetEligibleShopVouchersBodyDto extends createZodDto(GetEligibleShopVouchersBodySchema) {}
+
+// Get Eligible Szone Vouchers 
+export const GetEligibleSzoneVouchersBodySchema = z.object({
+  items: z.array(CartItemSchema).min(1),
+})
+
+export class GetEligibleSzoneVouchersBodyDto extends createZodDto(GetEligibleSzoneVouchersBodySchema) {}

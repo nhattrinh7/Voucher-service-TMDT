@@ -16,7 +16,9 @@ import { UpdateShopVoucherCommand } from '~/application/commands/update-shop-vou
 import { GetShopVouchersQuery } from '~/application/queries/get-shop-vouchers/get-shop-vouchers.query'
 import { GetSzoneVouchersQuery } from '~/application/queries/get-szone-vouchers/get-szone-vouchers.query'
 import { GetVoucherDetailByIdQuery } from '~/application/queries/get-voucher-detail-by-id/get-voucher-detail-by-id.query'
-import { CreateVoucherBodyDto, GetSzoneVouchersPaginatedQueryDto, UpdateVoucherBodyDto } from '~/presentation/dtos/voucher.dto'
+import { GetEligibleShopVouchersQuery } from '~/application/queries/get-eligible-shop-vouchers/get-eligible-shop-vouchers.query'
+import { GetEligibleSzoneVouchersQuery } from '~/application/queries/get-eligible-szone-vouchers/get-eligible-szone-vouchers.query'
+import { CreateVoucherBodyDto, GetSzoneVouchersPaginatedQueryDto, UpdateVoucherBodyDto, GetEligibleShopVouchersBodyDto, GetEligibleSzoneVouchersBodyDto } from '~/presentation/dtos/voucher.dto'
 
 
 @Controller('v1/vouchers')
@@ -85,6 +87,31 @@ export class VoucherController {
     await this.commandBus.execute(new UpdateShopVoucherCommand(id, body))
 
     return { message: 'Update shop voucher successful' }
+  }
+
+  @Post('/shops/:shopId/eligible')
+  async getEligibleShopVouchers(
+    @Param('shopId') shopId: string,
+    @Headers('x-user-id') userId: string,
+    @Body() body: GetEligibleShopVouchersBodyDto,
+  ): Promise<any> {
+    const vouchers = await this.queryBus.execute(
+      new GetEligibleShopVouchersQuery(userId, shopId, body.items)
+    )
+
+    return { message: 'Get eligible shop vouchers successful', data: { vouchers } }
+  }
+
+  @Post('/platform-vouchers/eligible')
+  async getEligibleSzoneVouchers(
+    @Headers('x-user-id') userId: string,
+    @Body() body: GetEligibleSzoneVouchersBodyDto,
+  ): Promise<any> {
+    const vouchers = await this.queryBus.execute(
+      new GetEligibleSzoneVouchersQuery(userId, body.items)
+    )
+
+    return { message: 'Get eligible platform vouchers successful', data: { vouchers } }
   }
 
 }

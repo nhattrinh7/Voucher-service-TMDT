@@ -11,6 +11,8 @@ export class VoucherMapper {
       description: voucher.description,
       discountType: voucher.discountType,
       discountValue: voucher.discountValue,
+      minOrderValue: voucher.minOrderValue,
+      maxDiscountValue: voucher.maxDiscountValue,
       startDate: voucher.startDate,
       endDate: voucher.endDate,
       usageLimit: voucher.usageLimit,

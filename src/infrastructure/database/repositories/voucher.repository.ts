@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { PrismaService } from '~/infrastructure/database/prisma/prisma.service'
 import { Voucher } from '~/domain/entities/voucher.entity'
 import { VoucherMapper } from '~/infrastructure/database/mappers/voucher.mapper'
-import { IVoucherRepository, VoucherWithUsedCount, VoucherWithDetails, PaginatedResult } from '~/domain/repositories/voucher.repository.interface'
+import { IVoucherRepository, VoucherWithUsedCount, VoucherWithDetails, PaginatedResult, EligibleVoucher } from '~/domain/repositories/voucher.repository.interface'
 
 @Injectable()
 export class VoucherRepository implements IVoucherRepository {
@@ -13,6 +13,13 @@ export class VoucherRepository implements IVoucherRepository {
     if (!voucher) return null
 
     return VoucherMapper.toDomain(voucher)
+  }
+
+  async findByIds(ids: string[]): Promise<Voucher[]> {
+    const vouchers = await this.prisma.voucher.findMany({
+      where: { id: { in: ids } },
+    })
+    return vouchers.map(v => VoucherMapper.toDomain(v))
   }
 
   async findByIdWithDetails(id: string): Promise<VoucherWithDetails | null> {
@@ -82,16 +89,18 @@ export class VoucherRepository implements IVoucherRepository {
     })
   }
 
-  async create(voucher: Voucher): Promise<Voucher> {
-    const createdVoucher = await this.prisma.voucher.create({
+  async create(voucher: Voucher, tx?: any): Promise<Voucher> {
+    const client = tx ?? this.prisma
+    const createdVoucher = await client.voucher.create({
       data: VoucherMapper.toPersistence(voucher),
     })
 
     return VoucherMapper.toDomain(createdVoucher)
   }
 
-  async update(voucher: Voucher): Promise<Voucher> {
-    const updatedVoucher = await this.prisma.voucher.update({
+  async update(voucher: Voucher, tx?: any): Promise<Voucher> {
+    const client = tx ?? this.prisma
+    const updatedVoucher = await client.voucher.update({
       where: { id: voucher.id },
       data: VoucherMapper.toPersistence(voucher),
     })
@@ -99,8 +108,9 @@ export class VoucherRepository implements IVoucherRepository {
     return VoucherMapper.toDomain(updatedVoucher)
   }
 
-  async createVoucherProducts(voucherId: string, productIds: string[]): Promise<void> {
-    await this.prisma.voucherProduct.createMany({
+  async createVoucherProducts(voucherId: string, productIds: string[], tx?: any): Promise<void> {
+    const client = tx ?? this.prisma
+    await client.voucherProduct.createMany({
       data: productIds.map((productId) => ({
         voucherId,
         productId,
@@ -108,8 +118,9 @@ export class VoucherRepository implements IVoucherRepository {
     })
   }
 
-  async createVoucherCategories(voucherId: string, categoryIds: string[]): Promise<void> {
-    await this.prisma.voucherCategory.createMany({
+  async createVoucherCategories(voucherId: string, categoryIds: string[], tx?: any): Promise<void> {
+    const client = tx ?? this.prisma
+    await client.voucherCategory.createMany({
       data: categoryIds.map((categoryId) => ({
         voucherId,
         categoryId,
@@ -117,14 +128,16 @@ export class VoucherRepository implements IVoucherRepository {
     })
   }
 
-  async deleteVoucherProducts(voucherId: string): Promise<void> {
-    await this.prisma.voucherProduct.deleteMany({
+  async deleteVoucherProducts(voucherId: string, tx?: any): Promise<void> {
+    const client = tx ?? this.prisma
+    await client.voucherProduct.deleteMany({
       where: { voucherId },
     })
   }
 
-  async deleteVoucherCategories(voucherId: string): Promise<void> {
-    await this.prisma.voucherCategory.deleteMany({
+  async deleteVoucherCategories(voucherId: string, tx?: any): Promise<void> {
+    const client = tx ?? this.prisma
+    await client.voucherCategory.deleteMany({
       where: { voucherId },
     })
   }
@@ -230,5 +243,150 @@ export class VoucherRepository implements IVoucherRepository {
         totalPages: Math.ceil(total / limit),
       },
     }
+  }
+
+  async findEligibleShopVouchers(
+    shopId: string,
+    userId: string,
+  ): Promise<Array<EligibleVoucher & { voucherProducts: { productId: string }[] }>> {
+    const now = new Date()
+
+    // Lấy tất cả voucher của shop còn hạn, chưa xóa
+    const vouchers = await this.prisma.voucher.findMany({
+      where: {
+        shopId,
+        isDeleted: false,
+        startDate: { lte: now },
+        endDate: { gte: now },
+      },
+      include: {
+        voucherProducts: true,  // Cần để handler filter scope PRODUCT
+        voucherUsages: {
+          where: {
+            status: {
+              in: ['RESERVED', 'CONFIRMED'],
+            },
+          },
+        },
+      },
+    })
+
+    const eligibleVouchers: Array<EligibleVoucher & { voucherProducts: { productId: string }[] }> = []
+
+    for (const voucher of vouchers) {
+      // Kiểm tra usageLimit
+      const totalUsage = voucher.voucherUsages.length
+      if (totalUsage >= voucher.usageLimit) {
+        continue
+      }
+
+      // Kiểm tra perUserLimit
+      const userUsage = voucher.voucherUsages.filter(vu => vu.userId === userId).length
+      if (userUsage >= voucher.perUserLimit) {
+        continue
+      }
+
+      // Voucher còn lượt dùng - thêm vào danh sách
+      // Không filter theo scope/minOrderValue ở đây - handler sẽ filter
+      eligibleVouchers.push({
+        id: voucher.id,
+        code: voucher.code,
+        name: voucher.name,
+        discountType: voucher.discountType,
+        discountValue: voucher.discountValue,
+        minOrderValue: voucher.minOrderValue,
+        maxDiscountValue: voucher.maxDiscountValue,
+        startDate: voucher.startDate,
+        endDate: voucher.endDate,
+        scope: voucher.scope,
+        usageLimit: voucher.usageLimit,
+        remainingUsage: voucher.usageLimit - totalUsage,
+        userRemainingUsage: voucher.perUserLimit - userUsage,
+        voucherProducts: voucher.voucherProducts.map(vp => ({ productId: vp.productId })),
+      })
+    }
+
+    return eligibleVouchers
+  }
+
+  async findEligibleSzoneVouchers(
+    userId: string,
+    orderValue: number,
+  ): Promise<Array<EligibleVoucher & { voucherCategories: { categoryId: string }[] }>> {
+    const now = new Date()
+
+    // Lấy tất cả voucher sàn (shopId = null) còn hạn, chưa xóa
+    const vouchers = await this.prisma.voucher.findMany({
+      where: {
+        shopId: null,  // Voucher sàn
+        isDeleted: false,
+        startDate: { lte: now },
+        endDate: { gte: now },
+        minOrderValue: { lte: orderValue },  // Đơn hàng đạt tối thiểu
+      },
+      include: {
+        voucherCategories: true,  // Cần để handler filter scope CATEGORY
+        voucherUsages: {
+          where: {
+            status: {
+              in: ['RESERVED', 'CONFIRMED'],
+            },
+          },
+        },
+      },
+    })
+
+    const eligibleVouchers: Array<EligibleVoucher & { voucherCategories: { categoryId: string }[] }> = []
+
+    for (const voucher of vouchers) {
+      // Kiểm tra usageLimit
+      const totalUsage = voucher.voucherUsages.length
+      if (totalUsage >= voucher.usageLimit) {
+        continue
+      }
+
+      // Kiểm tra perUserLimit
+      const userUsage = voucher.voucherUsages.filter(vu => vu.userId === userId).length
+      if (userUsage >= voucher.perUserLimit) {
+        continue
+      }
+
+      // Voucher eligible - thêm vào danh sách
+      // Không filter theo scope ở đây - handler sẽ filter
+      eligibleVouchers.push({
+        id: voucher.id,
+        code: voucher.code,
+        name: voucher.name,
+        discountType: voucher.discountType,
+        discountValue: voucher.discountValue,
+        minOrderValue: voucher.minOrderValue,
+        maxDiscountValue: voucher.maxDiscountValue,
+        startDate: voucher.startDate,
+        endDate: voucher.endDate,
+        scope: voucher.scope,
+        usageLimit: voucher.usageLimit,
+        remainingUsage: voucher.usageLimit - totalUsage,
+        userRemainingUsage: voucher.perUserLimit - userUsage,
+        voucherCategories: voucher.voucherCategories.map(vc => ({ categoryId: vc.categoryId })),
+      })
+    }
+
+    return eligibleVouchers
+  }
+
+  async getVoucherProductIds(voucherId: string): Promise<string[]> {
+    const voucherProducts = await this.prisma.voucherProduct.findMany({
+      where: { voucherId },
+      select: { productId: true },
+    })
+    return voucherProducts.map(vp => vp.productId)
+  }
+
+  async getVoucherCategoryIds(voucherId: string): Promise<string[]> {
+    const voucherCategories = await this.prisma.voucherCategory.findMany({
+      where: { voucherId },
+      select: { categoryId: true },
+    })
+    return voucherCategories.map(vc => vc.categoryId)
   }
 }

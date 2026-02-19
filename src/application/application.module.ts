@@ -11,6 +11,12 @@ import { SoftDeleteSzoneVoucherHandler } from './commands/soft-delete-szone-vouc
 import { UpdateSzoneVoucherHandler } from './commands/update-szone-voucher/update-szone-voucher.command.handler'
 import { GetSzoneVouchersHandler } from './queries/get-szone-vouchers/get-szone-vouchers.query.handler'
 import { GetVoucherDetailByIdHandler } from './queries/get-voucher-detail-by-id/get-voucher-detail-by-id.query.handler'
+import { GetEligibleShopVouchersHandler } from './queries/get-eligible-shop-vouchers/get-eligible-shop-vouchers.query.handler'
+import { GetEligibleSzoneVouchersHandler } from './queries/get-eligible-szone-vouchers/get-eligible-szone-vouchers.query.handler'
+import { ValidateVoucherHandler } from './queries/validate-voucher/validate-voucher.query.handler'
+import { ValidateVouchersBatchHandler } from './queries/validate-vouchers-batch/validate-vouchers-batch.query.handler'
+import { ReserveVoucherUsageHandler } from './commands/reserve-voucher-usage/reserve-voucher-usage.command.handler'
+import { CancelAllReservedHandler } from './commands/cancel-all-reserved/cancel-all-reserved.command.handler'
 
 const CommandHandlers = [
   CreateShopVoucherHandler,
@@ -18,13 +24,19 @@ const CommandHandlers = [
   UpdateShopVoucherHandler,
   CreateSzoneVoucherHandler,
   SoftDeleteSzoneVoucherHandler,
-  UpdateSzoneVoucherHandler
+  UpdateSzoneVoucherHandler,
+  ReserveVoucherUsageHandler,
+  CancelAllReservedHandler,
 ]
 
 const QueryHandlers = [
   GetShopVouchersHandler,
   GetSzoneVouchersHandler,
-  GetVoucherDetailByIdHandler
+  GetVoucherDetailByIdHandler,
+  GetEligibleShopVouchersHandler,
+  GetEligibleSzoneVouchersHandler,
+  ValidateVoucherHandler,
+  ValidateVouchersBatchHandler,
 ]
 
 const EventHandlers = [
