@@ -7,6 +7,7 @@ import { ValidateVoucherConsumer } from '~/infrastructure/messaging/consumers/va
 import { ValidateVouchersBatchConsumer } from '~/infrastructure/messaging/consumers/validate-vouchers-batch.consumer'
 import { ReserveVoucherUsageConsumer } from '~/infrastructure/messaging/consumers/reserve-voucher-usage.consumer'
 import { CancelAllReservedVoucherUsagesConsumer } from '~/infrastructure/messaging/consumers/cancel-all-reserved-voucher-usages.consumer'
+import { SagaVoucherConsumer } from '~/infrastructure/messaging/consumers/saga-voucher.consumer'
 
 @Module({
   imports: [
@@ -30,7 +31,23 @@ import { CancelAllReservedVoucherUsagesConsumer } from '~/infrastructure/messagi
           persistent: true,
         },
       },
+      {
+        name: 'SAGA_CLIENT',
+        transport: Transport.RMQ,
+        options: {
+          urls: ['amqp://admin:admin123@localhost:5672'],
+          queue: 'saga_queue',
+          persistent: true,
+        },
+      },
     ]),
+  ],
+  controllers: [
+    ValidateVoucherConsumer,
+    ValidateVouchersBatchConsumer,
+    ReserveVoucherUsageConsumer,
+    CancelAllReservedVoucherUsagesConsumer,
+    SagaVoucherConsumer,
   ],
   providers: [
     {
@@ -38,7 +55,6 @@ import { CancelAllReservedVoucherUsagesConsumer } from '~/infrastructure/messagi
       useClass: RabbitMQPublisher,
     },
   ],
-  controllers: [ValidateVoucherConsumer, ValidateVouchersBatchConsumer, ReserveVoucherUsageConsumer, CancelAllReservedVoucherUsagesConsumer],
   exports: [ClientsModule, MESSAGE_PUBLISHER],
 })
 export class MessagingModule {}

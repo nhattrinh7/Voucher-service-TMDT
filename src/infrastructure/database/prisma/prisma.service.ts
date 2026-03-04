@@ -27,7 +27,10 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
   }
 
   async transaction<T>(fn: (tx: Prisma.TransactionClient) => Promise<T>): Promise<T> {
-    return this.$transaction(fn)
+    return this.$transaction(fn, {
+      maxWait: 10000,
+      timeout: 15000,
+    })
   }
 
   async onModuleDestroy() {

@@ -17,6 +17,9 @@ import { ValidateVoucherHandler } from './queries/validate-voucher/validate-vouc
 import { ValidateVouchersBatchHandler } from './queries/validate-vouchers-batch/validate-vouchers-batch.query.handler'
 import { ReserveVoucherUsageHandler } from './commands/reserve-voucher-usage/reserve-voucher-usage.command.handler'
 import { CancelAllReservedHandler } from './commands/cancel-all-reserved/cancel-all-reserved.command.handler'
+import { SagaValidateVouchersHandler } from './commands/saga-validate-vouchers/saga-validate-vouchers.command.handler'
+import { SagaConfirmVouchersHandler } from './commands/saga-confirm-vouchers/saga-confirm-vouchers.command.handler'
+import { SagaCancelVouchersHandler } from './commands/saga-cancel-vouchers/saga-cancel-vouchers.command.handler'
 
 const CommandHandlers = [
   CreateShopVoucherHandler,
@@ -27,6 +30,9 @@ const CommandHandlers = [
   UpdateSzoneVoucherHandler,
   ReserveVoucherUsageHandler,
   CancelAllReservedHandler,
+  SagaValidateVouchersHandler,
+  SagaConfirmVouchersHandler,
+  SagaCancelVouchersHandler,
 ]
 
 const QueryHandlers = [

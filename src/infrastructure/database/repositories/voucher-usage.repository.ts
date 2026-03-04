@@ -8,8 +8,9 @@ import { VoucherUsageMapper } from '~/infrastructure/database/mappers/voucher-us
 export class VoucherUsageRepository implements IVoucherUsageRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(voucherUsage: VoucherUsage): Promise<void> {
-    await this.prisma.voucherUsage.create({
+  async create(voucherUsage: VoucherUsage, tx?: any): Promise<void> {
+    const client = tx || this.prisma
+    await client.voucherUsage.create({
       data: VoucherUsageMapper.toPersistence(voucherUsage),
     })
   }
@@ -117,9 +118,34 @@ export class VoucherUsageRepository implements IVoucherUsageRepository {
     return map
   }
 
-  async deleteAllReservedByUserId(userId: string): Promise<number> {
-    const result = await this.prisma.voucherUsage.deleteMany({
+  async deleteAllReservedByUserId(userId: string, tx?: any): Promise<number> {
+    const client = tx || this.prisma
+    const result = await client.voucherUsage.deleteMany({
       where: { userId, status: 'RESERVED' },
+    })
+    return result.count
+  }
+
+  async confirmByUserAndVoucherIds(userId: string, voucherIds: string[]): Promise<number> {
+    const result = await this.prisma.voucherUsage.updateMany({
+      where: {
+        userId,
+        voucherId: { in: voucherIds },
+        status: 'RESERVED',
+      },
+      data: { status: 'CONFIRMED' },
+    })
+    return result.count
+  }
+
+  async cancelByUserAndVoucherIds(userId: string, voucherIds: string[]): Promise<number> {
+    const result = await this.prisma.voucherUsage.updateMany({
+      where: {
+        userId,
+        voucherId: { in: voucherIds },
+        status: { in: ['RESERVED', 'CONFIRMED'] },
+      },
+      data: { status: 'CANCELLED' },
     })
     return result.count
   }

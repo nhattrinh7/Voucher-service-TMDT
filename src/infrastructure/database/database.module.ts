@@ -20,6 +20,7 @@ import { CqrsModule } from '@nestjs/cqrs'
     },
   ],
   exports: [
+    PrismaService,
     VOUCHER_REPOSITORY,
     VOUCHER_USAGE_REPOSITORY,
   ],

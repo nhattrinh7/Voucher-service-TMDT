@@ -22,9 +22,8 @@ export class ReserveVoucherUsageConsumer extends BaseRetryConsumer {
     @Payload() data: ReserveVoucherUsagePayload,
     @Ctx() context: RmqContext,
   ) {
-    console.log('Event reserve.voucher.usage received:', data)
-
     const result = await this.handleWithRetry(context, async () => {
+      this.logger.log(`Event reserve.voucher.usage received, voucherId=${data.voucherId}`)
       return await this.commandBus.execute(new ReserveVoucherUsageCommand(
         data.voucherId,
         data.userId,

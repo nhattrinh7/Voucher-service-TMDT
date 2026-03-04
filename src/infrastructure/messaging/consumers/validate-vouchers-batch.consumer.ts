@@ -29,9 +29,8 @@ export class ValidateVouchersBatchConsumer extends BaseRetryConsumer {
     @Payload() data: ValidateVouchersBatchPayload,
     @Ctx() context: RmqContext,
   ) {
-    console.log('Event validate.vouchers.batch received:', data)
-
     const result = await this.handleWithRetry(context, async () => {
+      this.logger.log(`Event validate.vouchers.batch received, count=${data.vouchers?.length}`)
       return await this.queryBus.execute(new ValidateVouchersBatchQuery(
         data.userId,
         data.vouchers,

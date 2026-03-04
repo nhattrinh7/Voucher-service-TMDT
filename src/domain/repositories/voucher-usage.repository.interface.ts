@@ -1,7 +1,7 @@
 import { VoucherUsage } from '~/domain/entities/voucher-usage.entity'
 
 export interface IVoucherUsageRepository {
-  create(voucherUsage: VoucherUsage): Promise<void>
+  create(voucherUsage: VoucherUsage, tx?: any): Promise<void>
   findById(id: string): Promise<VoucherUsage | null>
   findByVoucherIdAndUserId(voucherId: string, userId: string): Promise<VoucherUsage[]>
   updateStatus(id: string, status: 'RESERVED' | 'CONFIRMED' | 'CANCELLED'): Promise<void>
@@ -16,7 +16,11 @@ export interface IVoucherUsageRepository {
   countByUserAndVoucherIds(userId: string, voucherIds: string[], statuses?: ('RESERVED' | 'CONFIRMED' | 'CANCELLED')[]): Promise<Map<string, number>>
 
   // Cleanup methods
-  deleteAllReservedByUserId(userId: string): Promise<number>
+  deleteAllReservedByUserId(userId: string, tx?: any): Promise<number>
+
+  // Saga methods
+  confirmByUserAndVoucherIds(userId: string, voucherIds: string[]): Promise<number>
+  cancelByUserAndVoucherIds(userId: string, voucherIds: string[]): Promise<number>
 }
 
 export const VOUCHER_USAGE_REPOSITORY = Symbol('IVoucherUsageRepository')
