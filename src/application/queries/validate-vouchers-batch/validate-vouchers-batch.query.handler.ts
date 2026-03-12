@@ -48,11 +48,12 @@ export class ValidateVouchersBatchHandler implements IQueryHandler<ValidateVouch
 
     const voucherIds = voucherRequests.map(v => v.voucherId)
 
-    // 1. Batch fetch: lấy tất cả vouchers, total usages, user usages cùng lúc
-    const [allVouchers, totalUsagesMap, userUsagesMap] = await Promise.all([
+    // 1. Batch fetch: lấy tất cả vouchers, total usages, user reserved, user confirmed cùng lúc
+    const [allVouchers, totalUsagesMap, userReservedMap, userConfirmedMap] = await Promise.all([
       this.voucherRepository.findByIds(voucherIds),
-      this.voucherUsageRepository.countByVoucherIds(voucherIds),
-      this.voucherUsageRepository.countByUserAndVoucherIds(userId, voucherIds),
+      this.voucherUsageRepository.countByVoucherIds(voucherIds, ['RESERVED', 'CONFIRMED']),
+      this.voucherUsageRepository.countByUserAndVoucherIds(userId, voucherIds, ['RESERVED']),
+      this.voucherUsageRepository.countByUserAndVoucherIds(userId, voucherIds, ['CONFIRMED']),
     ])
 
     const vouchersMap = new Map(allVouchers.map(v => [v.id, v]))
@@ -85,14 +86,17 @@ export class ValidateVouchersBatchHandler implements IQueryHandler<ValidateVouch
 
       // Check usage limits (dùng data batch)
       const totalUsages = totalUsagesMap.get(voucherId) || 0
-      if (totalUsages >= voucher.usageLimit) {
+      const userReserved = userReservedMap.get(voucherId) || 0
+      
+      // Tổng lượng chiếm chỗ của mọi người TRỪ số ghế user này đang giữ
+      if (totalUsages - userReserved >= voucher.usageLimit) {
         results[voucherId] = { valid: false, error: 'Voucher đã hết lượt sử dụng' }
         continue
       }
 
       // Check per user limit (dùng data batch)
-      const userUsages = userUsagesMap.get(voucherId) || 0
-      if (userUsages >= voucher.perUserLimit) {
+      const userConfirmed = userConfirmedMap.get(voucherId) || 0
+      if (userConfirmed >= voucher.perUserLimit) {
         results[voucherId] = { valid: false, error: 'Bạn đã hết lượt sử dụng voucher này' }
         continue
       }

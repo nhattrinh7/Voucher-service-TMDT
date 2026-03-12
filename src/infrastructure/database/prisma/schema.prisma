@@ -53,8 +53,7 @@ model VoucherUsage {
 }
 
 /*
-  - Khi 1 user muốn áp dụng voucher, cần đếm các người khác đã dùng hết lượt chưa, thì đếm các bản ghi RESERVED và CONFIRMED,
-    còn CANCELLED thì ko tính vì đơn hãng đã bị hủy thì coi như chưa dùng voucher
+  - Khi 1 user muốn áp dụng voucher, cần đếm các người khác đã dùng hết lượt chưa, thì đếm các bản ghi RESERVED và CONFIRMED
   - Khi 1 user muốn áp dụng voucher, cần đếm xem bản thân đã hết lượt dùng cho 1 người của voucher chưa
     thì đếm RESERVED và CONFIRMED, lí do đếm cả RESERVED vì có thể user đó đã đặt đơn nhưng chưa thanh toán ở 1 thiết bị khác
   - Ở trang áp voucher và chọn địa chỉ giao hàng, chỉ cần mới chọn áp voucher đó thôi là đã phải tạo ra 1 bản ghi RESERVED,

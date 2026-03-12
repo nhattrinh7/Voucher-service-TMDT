@@ -70,8 +70,11 @@ export class ValidateVoucherHandler implements IQueryHandler<ValidateVoucherQuer
     }
 
     // 4. Check usage limits
-    const totalUsages = await this.voucherUsageRepository.countByVoucherId(voucherId)
-    if (totalUsages >= voucher.usageLimit) {
+    const totalUsages = await this.voucherUsageRepository.countByVoucherId(voucherId, ['RESERVED', 'CONFIRMED'])
+    // Loại trừ số lượng RESERVED của chính User hiện tại ra khỏi logic check vượt giới hạn tổng
+    const userReserved = await this.voucherUsageRepository.countByUserAndVoucher(userId, voucherId, ['RESERVED'])
+
+    if (totalUsages - userReserved >= voucher.usageLimit) {
       return {
         valid: false,
         error: 'Voucher đã hết lượt sử dụng',
@@ -79,8 +82,9 @@ export class ValidateVoucherHandler implements IQueryHandler<ValidateVoucherQuer
     }
 
     // 5. Check per user limit
-    const userUsages = await this.voucherUsageRepository.countByUserAndVoucher(userId, voucherId)
-    if (userUsages >= voucher.perUserLimit) {
+    // Chỉ kiểm tra số lượt đã thực dùng (CONFIRMED) của User
+    const userConfirmed = await this.voucherUsageRepository.countByUserAndVoucher(userId, voucherId, ['CONFIRMED'])
+    if (userConfirmed >= voucher.perUserLimit) {
       return {
         valid: false,
         error: 'Bạn đã hết lượt sử dụng voucher này',
