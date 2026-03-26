@@ -3,8 +3,8 @@ import { Inject } from '@nestjs/common'
 import { SagaValidateVouchersCommand } from './saga-validate-vouchers.command'
 import type { IVoucherRepository } from '~/domain/repositories/voucher.repository.interface'
 import { VOUCHER_REPOSITORY } from '~/domain/repositories/voucher.repository.interface'
-import type { IVoucherUsageRepository } from '~/domain/repositories/voucher-usage.repository.interface'
 import { VOUCHER_USAGE_REPOSITORY } from '~/domain/repositories/voucher-usage.repository.interface'
+import type { IVoucherUsageRepository } from '~/domain/repositories/voucher-usage.repository.interface'
 
 interface ShopVoucherResult {
   shopId: string
