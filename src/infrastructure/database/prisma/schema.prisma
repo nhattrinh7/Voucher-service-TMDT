@@ -35,6 +35,9 @@ model Voucher {
   voucherCategories VoucherCategory[]
   voucherProducts   VoucherProduct[]
 
+  @@index([shopId, isDeleted, createdAt(sort: Desc)])
+  @@index([shopId, isDeleted, startDate, endDate])
+  @@index([shopId, isDeleted, startDate, endDate, minOrderValue])
   @@map("vouchers")
 }
 
@@ -49,6 +52,9 @@ model VoucherUsage {
   // Relations
   voucher Voucher @relation(fields: [voucherId], references: [id], onDelete: Cascade)
 
+  @@index([voucherId, status])
+  @@index([userId, voucherId, status])
+  @@index([userId, status])
   @@map("voucher_usages")
 }
 
