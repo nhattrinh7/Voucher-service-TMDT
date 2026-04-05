@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common'
 import { CacheModule } from '@nestjs/cache-manager'
+import { ConfigModule, ConfigService } from '@nestjs/config'
 import { redisStore } from 'cache-manager-redis-yet'
 import { EventEmitterModule } from '@nestjs/event-emitter'
 import { CacheEvictListener } from '~/infrastructure/cache/cache-evict.listener'
@@ -8,11 +9,14 @@ import { CacheEvictListener } from '~/infrastructure/cache/cache-evict.listener'
   imports: [
     CacheModule.registerAsync({
       isGlobal: true,
-      useFactory: async () => {
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: async (configService: ConfigService) => {
         const store = await redisStore({
+          password: configService.get<string>('REDIS_PASSWORD'),
           socket: {
-            host: 'localhost',
-            port: 6379,
+            host: configService.get<string>('REDIS_HOST', 'localhost'),
+            port: configService.get<number>('REDIS_PORT', 6379),
           },
           ttl: 300_000, // default TTL 5 phút (milliseconds)
         })
