@@ -2,7 +2,13 @@ import { Injectable } from '@nestjs/common'
 import { PrismaService } from '~/infrastructure/database/prisma/prisma.service'
 import { Voucher } from '~/domain/entities/voucher.entity'
 import { VoucherMapper } from '~/infrastructure/database/mappers/voucher.mapper'
-import { IVoucherRepository, VoucherWithUsedCount, VoucherWithDetails, PaginatedResult, EligibleVoucher } from '~/domain/repositories/voucher.repository.interface'
+import {
+  IVoucherRepository,
+  VoucherWithUsedCount,
+  VoucherWithDetails,
+  PaginatedResult,
+  EligibleVoucher,
+} from '~/domain/repositories/voucher.repository.interface'
 
 @Injectable()
 export class VoucherRepository implements IVoucherRepository {
@@ -41,8 +47,8 @@ export class VoucherRepository implements IVoucherRepository {
     return {
       ...voucherDomain,
       usedCount: voucher._count.voucherUsages,
-      productIds: voucher.voucherProducts.map((vp) => vp.productId),
-      categoryIds: voucher.voucherCategories.map((vc) => vc.categoryId),
+      productIds: voucher.voucherProducts.map(vp => vp.productId),
+      categoryIds: voucher.voucherCategories.map(vc => vc.categoryId),
     } as VoucherWithDetails
   }
 
@@ -111,7 +117,7 @@ export class VoucherRepository implements IVoucherRepository {
   async createVoucherProducts(voucherId: string, productIds: string[], tx?: any): Promise<void> {
     const client = tx ?? this.prisma
     await client.voucherProduct.createMany({
-      data: productIds.map((productId) => ({
+      data: productIds.map(productId => ({
         voucherId,
         productId,
       })),
@@ -121,7 +127,7 @@ export class VoucherRepository implements IVoucherRepository {
   async createVoucherCategories(voucherId: string, categoryIds: string[], tx?: any): Promise<void> {
     const client = tx ?? this.prisma
     await client.voucherCategory.createMany({
-      data: categoryIds.map((categoryId) => ({
+      data: categoryIds.map(categoryId => ({
         voucherId,
         categoryId,
       })),
@@ -152,7 +158,7 @@ export class VoucherRepository implements IVoucherRepository {
       },
     })
   }
- 
+
   async findSzoneVouchersPaginated(
     page: number,
     limit: number,
@@ -168,9 +174,9 @@ export class VoucherRepository implements IVoucherRepository {
         case 'UPCOMING':
           return { startDate: { gt: now } } // Chưa diễn ra
         case 'ACTIVE':
-          return { 
-            startDate: { lte: now }, 
-            endDate: { gte: now } 
+          return {
+            startDate: { lte: now },
+            endDate: { gte: now },
           } // Đang diễn ra
         case 'EXPIRED':
           return { endDate: { lt: now } } // Đã kết thúc
@@ -260,7 +266,7 @@ export class VoucherRepository implements IVoucherRepository {
         endDate: { gte: now },
       },
       include: {
-        voucherProducts: true,  // Cần để handler filter scope PRODUCT
+        voucherProducts: true, // Cần để handler filter scope PRODUCT
         voucherUsages: {
           where: {
             status: {
@@ -271,7 +277,8 @@ export class VoucherRepository implements IVoucherRepository {
       },
     })
 
-    const eligibleVouchers: Array<EligibleVoucher & { voucherProducts: { productId: string }[] }> = []
+    const eligibleVouchers: Array<EligibleVoucher & { voucherProducts: { productId: string }[] }> =
+      []
 
     for (const voucher of vouchers) {
       // Kiểm tra usageLimit
@@ -318,14 +325,14 @@ export class VoucherRepository implements IVoucherRepository {
     // Lấy tất cả voucher sàn (shopId = null) còn hạn, chưa xóa
     const vouchers = await this.prisma.voucher.findMany({
       where: {
-        shopId: null,  // Voucher sàn
+        shopId: null, // Voucher sàn
         isDeleted: false,
         startDate: { lte: now },
         endDate: { gte: now },
-        minOrderValue: { lte: orderValue },  // Đơn hàng đạt tối thiểu
+        minOrderValue: { lte: orderValue }, // Đơn hàng đạt tối thiểu
       },
       include: {
-        voucherCategories: true,  // Cần để handler filter scope CATEGORY
+        voucherCategories: true, // Cần để handler filter scope CATEGORY
         voucherUsages: {
           where: {
             status: {
@@ -336,7 +343,9 @@ export class VoucherRepository implements IVoucherRepository {
       },
     })
 
-    const eligibleVouchers: Array<EligibleVoucher & { voucherCategories: { categoryId: string }[] }> = []
+    const eligibleVouchers: Array<
+      EligibleVoucher & { voucherCategories: { categoryId: string }[] }
+    > = []
 
     for (const voucher of vouchers) {
       // Kiểm tra usageLimit

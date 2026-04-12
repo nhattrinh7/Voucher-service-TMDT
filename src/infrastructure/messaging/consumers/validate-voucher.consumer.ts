@@ -16,25 +16,17 @@ interface ValidateVoucherPayload {
 
 @Controller()
 export class ValidateVoucherConsumer extends BaseRetryConsumer {
-  constructor(
-    private readonly queryBus: QueryBus,
-  ) {
+  constructor(private readonly queryBus: QueryBus) {
     super()
   }
 
   @MessagePattern('validate.voucher')
-  async handleValidateVoucher(
-    @Payload() data: ValidateVoucherPayload,
-    @Ctx() context: RmqContext,
-  ) {
+  async handleValidateVoucher(@Payload() data: ValidateVoucherPayload, @Ctx() context: RmqContext) {
     const result = await this.handleWithRetry(context, async () => {
       this.logger.log(`Event validate.voucher received, voucherId=${data.voucherId}`)
-      return await this.queryBus.execute(new ValidateVoucherQuery(
-        data.voucherId,
-        data.userId,
-        data.orderValue,
-        data.items
-      ))
+      return await this.queryBus.execute(
+        new ValidateVoucherQuery(data.voucherId, data.userId, data.orderValue, data.items),
+      )
     })
 
     return result

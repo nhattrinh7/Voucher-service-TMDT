@@ -18,9 +18,7 @@ interface ValidateVouchersBatchPayload {
 
 @Controller()
 export class ValidateVouchersBatchConsumer extends BaseRetryConsumer {
-  constructor(
-    private readonly queryBus: QueryBus,
-  ) {
+  constructor(private readonly queryBus: QueryBus) {
     super()
   }
 
@@ -31,10 +29,7 @@ export class ValidateVouchersBatchConsumer extends BaseRetryConsumer {
   ) {
     const result = await this.handleWithRetry(context, async () => {
       this.logger.log(`Event validate.vouchers.batch received, count=${data.vouchers?.length}`)
-      return await this.queryBus.execute(new ValidateVouchersBatchQuery(
-        data.userId,
-        data.vouchers,
-      ))
+      return await this.queryBus.execute(new ValidateVouchersBatchQuery(data.userId, data.vouchers))
     })
 
     return result

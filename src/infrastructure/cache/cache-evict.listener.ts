@@ -15,9 +15,7 @@ export interface CacheInvalidatePayload {
 export class CacheEvictListener {
   private readonly logger = new Logger(CacheEvictListener.name)
 
-  constructor(
-    @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
-  ) {}
+  constructor(@Inject(CACHE_MANAGER) private readonly cacheManager: Cache) {}
 
   @OnEvent(CACHE_EVENT.INVALIDATE)
   async handleCacheInvalidate(payload: CacheInvalidatePayload) {
@@ -74,17 +72,17 @@ export class CacheEvictListener {
  * Với lệnh KEYS: Redis sẽ dừng MỌI hoạt động khác để quét toàn bộ RedisDB để tìm ra các key khớp với pattern mà mình chỉ định. Sau khi tìm ra đống
  * key khớp đó thì cầm cục đó để chạy lệnh DEL. Thời gian để xử lí lệnh KEYS có thể mất đến cả chục giây, các request khác đến Redis bị timeout hàng loạt
  * và thôi bỏ mẹ rồi.
- * 
- * Với SCAN 100 thì chỉ tìm 100 key xem có khớp hay không thôi nên chạy rất nhanh rồi nghỉ tay để Redis xử lí tiếp các lệnh khác đang xếp hàng. 
+ *
+ * Với SCAN 100 thì chỉ tìm 100 key xem có khớp hay không thôi nên chạy rất nhanh rồi nghỉ tay để Redis xử lí tiếp các lệnh khác đang xếp hàng.
  * Thế nên sẽ ko gây blocking.
- * 
+ *
  * Hiện tại với Cache Detail hay Personal thì với key cụ thể, ví dụ: cache:detail:users:123, mình đã biết đích xác key là gì rồi nên tìm rất nhanh
  * nên ko gây blocking.
  * Về mặt kĩ thuật thì Redis lưu key bằng hash table siêu tối ưu. Thế nên khi nhận được 1 giá trị key đích xác, Redis ném key và hàm băm rồi bùm 1 phát
  * tính ra ngay lập tức vị trí vật lí của cái key đó nằm ở hộc số mấy trong kho. Nó đi thẳng tới và thẳng tay xóa.
- * 
+ *
  * Còn việc phải xóa HẾT các biến thể của cache list theo pattern là vì ví dụ:
  * Admin thêm/sửa/xóa 1 category -> các cache của /api/v1/categories, /api/v1/categories?page=1&limit=10, /api/v1/categories?page=2&limit=10,...
  * đều bị stale thì phải xóa hết đi đúng ko. Và khi invalidate theo pattern như này thì đâu phải kiểu biết đích xác key là gì để tìm và xóa nhanh được đâu.
  * Đó là lí do mà phải dùng SCAN + batch DEL.
- */ 
+ */

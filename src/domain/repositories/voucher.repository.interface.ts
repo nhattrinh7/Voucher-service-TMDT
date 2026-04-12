@@ -41,7 +41,12 @@ export interface IVoucherRepository {
   findByIds(ids: string[]): Promise<Voucher[]>
   findByIdWithDetails(id: string): Promise<VoucherWithDetails | null>
   findByShopId(shopId: string): Promise<VoucherWithUsedCount[]>
-  findSzoneVouchersPaginated(page: number, limit: number, status?: 'UPCOMING' | 'ACTIVE' | 'EXPIRED', search?: string): Promise<PaginatedResult<VoucherWithUsedCount>>
+  findSzoneVouchersPaginated(
+    page: number,
+    limit: number,
+    status?: 'UPCOMING' | 'ACTIVE' | 'EXPIRED',
+    search?: string,
+  ): Promise<PaginatedResult<VoucherWithUsedCount>>
   create(voucher: Voucher, tx?: any): Promise<Voucher>
   update(voucher: Voucher, tx?: any): Promise<Voucher>
   createVoucherProducts(voucherId: string, productIds: string[], tx?: any): Promise<void>
@@ -49,9 +54,15 @@ export interface IVoucherRepository {
   deleteVoucherProducts(voucherId: string, tx?: any): Promise<void>
   deleteVoucherCategories(voucherId: string, tx?: any): Promise<void>
   softDelete(id: string, deletedBy: string): Promise<void>
-  findEligibleShopVouchers(shopId: string, userId: string): Promise<Array<EligibleVoucher & { voucherProducts: { productId: string }[] }>>
-  findEligibleSzoneVouchers(userId: string, orderValue: number): Promise<Array<EligibleVoucher & { voucherCategories: { categoryId: string }[] }>>
-  
+  findEligibleShopVouchers(
+    shopId: string,
+    userId: string,
+  ): Promise<Array<EligibleVoucher & { voucherProducts: { productId: string }[] }>>
+  findEligibleSzoneVouchers(
+    userId: string,
+    orderValue: number,
+  ): Promise<Array<EligibleVoucher & { voucherCategories: { categoryId: string }[] }>>
+
   // Methods for scope checking
   getVoucherProductIds(voucherId: string): Promise<string[]>
   getVoucherCategoryIds(voucherId: string): Promise<string[]>

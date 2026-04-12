@@ -10,9 +10,7 @@ interface CancelAllReservedPayload {
 
 @Controller()
 export class CancelAllReservedVoucherUsagesConsumer extends BaseRetryConsumer {
-  constructor(
-    private readonly commandBus: CommandBus,
-  ) {
+  constructor(private readonly commandBus: CommandBus) {
     super()
   }
 
@@ -23,9 +21,7 @@ export class CancelAllReservedVoucherUsagesConsumer extends BaseRetryConsumer {
   ) {
     const result = await this.handleWithRetry(context, async () => {
       this.logger.log(`Event cancel.all.reserved.voucher.usages received, userId=${data.userId}`)
-      return await this.commandBus.execute(new CancelAllReservedCommand(
-        data.userId,
-      ))
+      return await this.commandBus.execute(new CancelAllReservedCommand(data.userId))
     })
 
     return result

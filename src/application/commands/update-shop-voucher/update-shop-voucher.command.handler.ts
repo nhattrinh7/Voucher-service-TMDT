@@ -2,10 +2,12 @@ import { Inject, NotFoundException, ForbiddenException } from '@nestjs/common'
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs'
 import { EventEmitter2 } from '@nestjs/event-emitter'
 import { UpdateShopVoucherCommand } from '~/application/commands/update-shop-voucher/update-shop-voucher.command'
-import { VOUCHER_REPOSITORY, type IVoucherRepository } from '~/domain/repositories/voucher.repository.interface'
+import {
+  VOUCHER_REPOSITORY,
+  type IVoucherRepository,
+} from '~/domain/repositories/voucher.repository.interface'
 import { PrismaService } from '~/infrastructure/database/prisma/prisma.service'
 import { CACHE_EVENT, CACHE_RESOURCE, CACHE_TYPE } from '~/common/constants/cache.constant'
-
 
 @CommandHandler(UpdateShopVoucherCommand)
 export class UpdateShopVoucherHandler implements ICommandHandler<UpdateShopVoucherCommand, void> {
@@ -21,15 +23,16 @@ export class UpdateShopVoucherHandler implements ICommandHandler<UpdateShopVouch
 
     const voucher = await this.voucherRepository.findById(id)
     if (!voucher) throw new NotFoundException('Voucher not found')
-    
+
     // Kiểm tra đây là voucher của shop (có shopId), không phải voucher sàn
-    if (!voucher.shopId) throw new ForbiddenException('Cannot update platform voucher using this API')
-    
+    if (!voucher.shopId)
+      throw new ForbiddenException('Cannot update platform voucher using this API')
+
     // Update entity trước
     voucher.update(data)
-    
+
     // Wrap tất cả DB writes trong transaction
-    await this.prismaService.transaction(async (tx) => {
+    await this.prismaService.transaction(async tx => {
       // Lưu vào database
       await this.voucherRepository.update(voucher, tx)
 
@@ -45,7 +48,14 @@ export class UpdateShopVoucherHandler implements ICommandHandler<UpdateShopVouch
     })
 
     // Invalidate cache voucher detail + list
-    this.eventEmitter.emit(CACHE_EVENT.INVALIDATE, { type: CACHE_TYPE.DETAIL, resource: CACHE_RESOURCE.VOUCHERS, id })
-    this.eventEmitter.emit(CACHE_EVENT.INVALIDATE, { type: CACHE_TYPE.LIST, resource: CACHE_RESOURCE.VOUCHERS })
+    this.eventEmitter.emit(CACHE_EVENT.INVALIDATE, {
+      type: CACHE_TYPE.DETAIL,
+      resource: CACHE_RESOURCE.VOUCHERS,
+      id,
+    })
+    this.eventEmitter.emit(CACHE_EVENT.INVALIDATE, {
+      type: CACHE_TYPE.LIST,
+      resource: CACHE_RESOURCE.VOUCHERS,
+    })
   }
 }

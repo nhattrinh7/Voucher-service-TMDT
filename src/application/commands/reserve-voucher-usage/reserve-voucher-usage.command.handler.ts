@@ -13,7 +13,9 @@ interface ReserveVoucherUsageResponse {
 }
 
 @CommandHandler(ReserveVoucherUsageCommand)
-export class ReserveVoucherUsageHandler implements ICommandHandler<ReserveVoucherUsageCommand, ReserveVoucherUsageResponse> {
+export class ReserveVoucherUsageHandler
+  implements ICommandHandler<ReserveVoucherUsageCommand, ReserveVoucherUsageResponse>
+{
   constructor(
     @Inject(VOUCHER_USAGE_REPOSITORY)
     private readonly voucherUsageRepository: IVoucherUsageRepository,

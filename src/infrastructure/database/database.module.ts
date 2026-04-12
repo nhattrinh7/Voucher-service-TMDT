@@ -19,10 +19,6 @@ import { CqrsModule } from '@nestjs/cqrs'
       useClass: VoucherUsageRepository,
     },
   ],
-  exports: [
-    PrismaService,
-    VOUCHER_REPOSITORY,
-    VOUCHER_USAGE_REPOSITORY,
-  ],
+  exports: [PrismaService, VOUCHER_REPOSITORY, VOUCHER_USAGE_REPOSITORY],
 })
 export class DatabaseModule {}

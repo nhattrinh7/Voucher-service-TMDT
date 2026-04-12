@@ -1,10 +1,16 @@
 import { QueryHandler, IQueryHandler } from '@nestjs/cqrs'
-import { VOUCHER_REPOSITORY, type IVoucherRepository, type EligibleVoucher } from '~/domain/repositories/voucher.repository.interface'
+import {
+  VOUCHER_REPOSITORY,
+  type IVoucherRepository,
+  type EligibleVoucher,
+} from '~/domain/repositories/voucher.repository.interface'
 import { Inject } from '@nestjs/common'
 import { GetEligibleShopVouchersQuery } from './get-eligible-shop-vouchers.query'
 
 @QueryHandler(GetEligibleShopVouchersQuery)
-export class GetEligibleShopVouchersHandler implements IQueryHandler<GetEligibleShopVouchersQuery, EligibleVoucher[]> {
+export class GetEligibleShopVouchersHandler
+  implements IQueryHandler<GetEligibleShopVouchersQuery, EligibleVoucher[]>
+{
   constructor(
     @Inject(VOUCHER_REPOSITORY)
     private readonly voucherRepository: IVoucherRepository,
@@ -14,7 +20,7 @@ export class GetEligibleShopVouchersHandler implements IQueryHandler<GetEligible
     const { userId, shopId, items } = query
 
     // 1. Tính tổng giá trị đơn hàng
-    const orderValue = items.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+    const orderValue = items.reduce((sum, item) => sum + item.price * item.quantity, 0)
 
     // 2. Lấy danh sách unique productIds
     const productIds = [...new Set(items.map(item => item.productId))]
@@ -34,11 +40,11 @@ export class GetEligibleShopVouchersHandler implements IQueryHandler<GetEligible
       // Check scope
       if (voucher.scope === 'PRODUCT') {
         // Voucher sản phẩm: phải có ít nhất 1 productId trong items thuộc voucher
-        const voucherProductIds = voucher.voucherProducts.map(vp=> vp.productId)
+        const voucherProductIds = voucher.voucherProducts.map(vp => vp.productId)
         const hasApplicableProduct = productIds.some(pid => voucherProductIds.includes(pid))
-        
+
         if (!hasApplicableProduct) {
-          continue  // Không áp dụng được
+          continue // Không áp dụng được
         }
       }
       // scope === 'ALL' thì luôn áp dụng được

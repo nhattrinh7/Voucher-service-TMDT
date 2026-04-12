@@ -1,8 +1,6 @@
 import { ICommand } from '@nestjs/cqrs'
-import { CreateVoucherBodyDto } from '~/presentation/dtos/voucher.dto';
+import { CreateVoucherBodyDto } from '~/presentation/dtos/voucher.dto'
 
 export class CreateSzoneVoucherCommand implements ICommand {
-  constructor(
-    public readonly body: CreateVoucherBodyDto,
-  ) {}
+  constructor(public readonly body: CreateVoucherBodyDto) {}
 }

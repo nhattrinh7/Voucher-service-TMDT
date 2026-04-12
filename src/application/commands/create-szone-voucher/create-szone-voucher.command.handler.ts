@@ -2,9 +2,11 @@ import { Inject } from '@nestjs/common'
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs'
 import { CreateSzoneVoucherCommand } from '~/application/commands/create-szone-voucher/create-szone-voucher.command'
 import { Voucher } from '~/domain/entities/voucher.entity'
-import { VOUCHER_REPOSITORY, type IVoucherRepository } from '~/domain/repositories/voucher.repository.interface'
+import {
+  VOUCHER_REPOSITORY,
+  type IVoucherRepository,
+} from '~/domain/repositories/voucher.repository.interface'
 import { PrismaService } from '~/infrastructure/database/prisma/prisma.service'
-
 
 @CommandHandler(CreateSzoneVoucherCommand)
 export class CreateSzoneVoucherHandler implements ICommandHandler<CreateSzoneVoucherCommand, void> {
@@ -34,13 +36,21 @@ export class CreateSzoneVoucherHandler implements ICommandHandler<CreateSzoneVou
     })
 
     // Wrap tất cả DB writes trong transaction
-    await this.prismaService.transaction(async (tx) => {
+    await this.prismaService.transaction(async tx => {
       // Tạo voucher
       const createdVoucher = await this.voucherRepository.create(voucher, tx)
 
       // Xử lí business logic: Nếu scope là CATEGORY thì lưu thêm vào bảng VoucherCategory
-      if (body.scope === 'CATEGORY' && body.selectedCategories && body.selectedCategories.length > 0) {
-        await this.voucherRepository.createVoucherCategories(createdVoucher.id, body.selectedCategories, tx)
+      if (
+        body.scope === 'CATEGORY' &&
+        body.selectedCategories &&
+        body.selectedCategories.length > 0
+      ) {
+        await this.voucherRepository.createVoucherCategories(
+          createdVoucher.id,
+          body.selectedCategories,
+          tx,
+        )
       }
     })
   }

@@ -3,10 +3,12 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs'
 import { EventEmitter2 } from '@nestjs/event-emitter'
 import { CreateShopVoucherCommand } from '~/application/commands/create-shop-voucher/create-shop-voucher.command'
 import { Voucher } from '~/domain/entities/voucher.entity'
-import { VOUCHER_REPOSITORY, type IVoucherRepository } from '~/domain/repositories/voucher.repository.interface'
+import {
+  VOUCHER_REPOSITORY,
+  type IVoucherRepository,
+} from '~/domain/repositories/voucher.repository.interface'
 import { PrismaService } from '~/infrastructure/database/prisma/prisma.service'
 import { CACHE_EVENT, CACHE_RESOURCE, CACHE_TYPE } from '~/common/constants/cache.constant'
-
 
 @CommandHandler(CreateShopVoucherCommand)
 export class CreateShopVoucherHandler implements ICommandHandler<CreateShopVoucherCommand, void> {
@@ -37,17 +39,24 @@ export class CreateShopVoucherHandler implements ICommandHandler<CreateShopVouch
     })
 
     // Wrap tất cả DB writes trong transaction
-    await this.prismaService.transaction(async (tx) => {
+    await this.prismaService.transaction(async tx => {
       // Tạo voucher
       const createdVoucher = await this.voucherRepository.create(voucher, tx)
 
       // Xử lí business logic: Nếu scope là PRODUCT thì lưu thêm vào bảng VoucherProduct
       if (body.scope === 'PRODUCT' && body.selectedProducts && body.selectedProducts.length > 0) {
-        await this.voucherRepository.createVoucherProducts(createdVoucher.id, body.selectedProducts, tx)
+        await this.voucherRepository.createVoucherProducts(
+          createdVoucher.id,
+          body.selectedProducts,
+          tx,
+        )
       }
     })
 
     // Invalidate cache list vouchers
-    this.eventEmitter.emit(CACHE_EVENT.INVALIDATE, { type: CACHE_TYPE.LIST, resource: CACHE_RESOURCE.VOUCHERS })
+    this.eventEmitter.emit(CACHE_EVENT.INVALIDATE, {
+      type: CACHE_TYPE.LIST,
+      resource: CACHE_RESOURCE.VOUCHERS,
+    })
   }
 }

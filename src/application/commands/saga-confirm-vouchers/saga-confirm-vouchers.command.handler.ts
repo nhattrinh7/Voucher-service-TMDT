@@ -12,7 +12,9 @@ interface ConfirmVouchersResult {
 }
 
 @CommandHandler(SagaConfirmVouchersCommand)
-export class SagaConfirmVouchersHandler implements ICommandHandler<SagaConfirmVouchersCommand, ConfirmVouchersResult> {
+export class SagaConfirmVouchersHandler
+  implements ICommandHandler<SagaConfirmVouchersCommand, ConfirmVouchersResult>
+{
   constructor(
     @Inject(VOUCHER_USAGE_REPOSITORY)
     private readonly voucherUsageRepository: IVoucherUsageRepository,
@@ -26,9 +28,16 @@ export class SagaConfirmVouchersHandler implements ICommandHandler<SagaConfirmVo
 
     // Invalidate cache cho các voucher đã confirm
     for (const voucherId of voucherIds) {
-      this.eventEmitter.emit(CACHE_EVENT.INVALIDATE, { type: CACHE_TYPE.DETAIL, resource: CACHE_RESOURCE.VOUCHERS, id: voucherId })
+      this.eventEmitter.emit(CACHE_EVENT.INVALIDATE, {
+        type: CACHE_TYPE.DETAIL,
+        resource: CACHE_RESOURCE.VOUCHERS,
+        id: voucherId,
+      })
     }
-    this.eventEmitter.emit(CACHE_EVENT.INVALIDATE, { type: CACHE_TYPE.LIST, resource: CACHE_RESOURCE.VOUCHERS })
+    this.eventEmitter.emit(CACHE_EVENT.INVALIDATE, {
+      type: CACHE_TYPE.LIST,
+      resource: CACHE_RESOURCE.VOUCHERS,
+    })
 
     return { success: true }
   }

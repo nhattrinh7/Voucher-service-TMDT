@@ -1,4 +1,3 @@
-
 import { Voucher as PrismaVoucher } from '@prisma/client'
 import { Voucher } from '~/domain/entities/voucher.entity'
 

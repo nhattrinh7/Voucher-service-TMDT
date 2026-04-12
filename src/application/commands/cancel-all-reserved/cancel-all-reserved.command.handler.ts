@@ -11,7 +11,9 @@ interface CancelAllReservedResponse {
 }
 
 @CommandHandler(CancelAllReservedCommand)
-export class CancelAllReservedHandler implements ICommandHandler<CancelAllReservedCommand, CancelAllReservedResponse> {
+export class CancelAllReservedHandler
+  implements ICommandHandler<CancelAllReservedCommand, CancelAllReservedResponse>
+{
   constructor(
     @Inject(VOUCHER_USAGE_REPOSITORY)
     private readonly voucherUsageRepository: IVoucherUsageRepository,

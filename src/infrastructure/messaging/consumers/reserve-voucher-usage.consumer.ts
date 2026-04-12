@@ -11,9 +11,7 @@ interface ReserveVoucherUsagePayload {
 
 @Controller()
 export class ReserveVoucherUsageConsumer extends BaseRetryConsumer {
-  constructor(
-    private readonly commandBus: CommandBus,
-  ) {
+  constructor(private readonly commandBus: CommandBus) {
     super()
   }
 
@@ -24,10 +22,9 @@ export class ReserveVoucherUsageConsumer extends BaseRetryConsumer {
   ) {
     const result = await this.handleWithRetry(context, async () => {
       this.logger.log(`Event reserve.voucher.usage received, voucherId=${data.voucherId}`)
-      return await this.commandBus.execute(new ReserveVoucherUsageCommand(
-        data.voucherId,
-        data.userId,
-      ))
+      return await this.commandBus.execute(
+        new ReserveVoucherUsageCommand(data.voucherId, data.userId),
+      )
     })
 
     return result

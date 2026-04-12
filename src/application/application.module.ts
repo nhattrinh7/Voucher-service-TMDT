@@ -45,21 +45,11 @@ const QueryHandlers = [
   ValidateVouchersBatchHandler,
 ]
 
-const EventHandlers = [
+const EventHandlers = []
 
-]
- 
 @Module({
-  imports: [
-    CqrsModule,
-    DatabaseModule,
-    MessagingModule
-  ],
-  providers: [
-    ...CommandHandlers,
-    ...QueryHandlers,
-    ...EventHandlers,
-  ],
+  imports: [CqrsModule, DatabaseModule, MessagingModule],
+  providers: [...CommandHandlers, ...QueryHandlers, ...EventHandlers],
   exports: [],
 })
 export class ApplicationModule {}

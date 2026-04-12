@@ -1,5 +1,7 @@
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter'
 import { NestFactory } from '@nestjs/core'
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
+
 import helmet from 'helmet'
 import { AppModule } from './app.module'
 import { Transport, MicroserviceOptions } from '@nestjs/microservices'
@@ -14,6 +16,14 @@ async function bootstrap() {
   app.use(helmet())
 
   app.setGlobalPrefix('api')
+
+  const config = new DocumentBuilder()
+    .setTitle('voucher-service API Docs')
+    .setVersion('1.0')
+    .build()
+  const document = SwaggerModule.createDocument(app, config)
+  SwaggerModule.setup('api/v1/vouchers/docs', app, document)
+
   app.useGlobalFilters(new GlobalExceptionFilter())
   app.useGlobalInterceptors(new ResponseInterceptor())
 
@@ -46,4 +56,3 @@ async function bootstrap() {
 
 // eslint-disable-next-line no-console
 bootstrap().catch(console.error)
-

@@ -1,6 +1,6 @@
 export const DiscountType = {
   FIXED: 'FIXED',
-  PERCENT: 'PERCENT'
+  PERCENT: 'PERCENT',
 } as const
 export type DiscountType = (typeof DiscountType)[keyof typeof DiscountType]
 

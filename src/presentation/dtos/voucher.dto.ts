@@ -1,9 +1,6 @@
 import { createZodDto } from 'nestjs-zod'
 import z from 'zod'
-import { 
-  VoucherScopeType, 
-  DiscountType,
-} from '~/domain/enums/voucher.enum'
+import { VoucherScopeType, DiscountType } from '~/domain/enums/voucher.enum'
 
 //----------- Shop Voucher -----------
 export const VoucherSchema = z.object({
@@ -14,7 +11,7 @@ export const VoucherSchema = z.object({
   description: z.string(),
   discountType: z.enum(DiscountType),
   discountValue: z.number().nonnegative(),
-  minOrderValue: z.number().nonnegative(), 
+  minOrderValue: z.number().nonnegative(),
   maxDiscountValue: z.number().nonnegative().optional().nullable(),
   startDate: z.coerce.date(),
   endDate: z.coerce.date(),
@@ -30,17 +27,17 @@ export const VoucherSchema = z.object({
 export class VoucherDto extends createZodDto(VoucherSchema) {}
 
 export const CreateVoucherBodySchema = VoucherSchema.pick({
-  shopId: true, 
+  shopId: true,
   code: true,
   name: true,
-  description: true,  
+  description: true,
   discountType: true,
   discountValue: true,
   minOrderValue: true,
   maxDiscountValue: true,
   startDate: true,
   endDate: true,
-  usageLimit: true, 
+  usageLimit: true,
   perUserLimit: true,
   scope: true,
 }).extend({
@@ -50,30 +47,31 @@ export const CreateVoucherBodySchema = VoucherSchema.pick({
 export class CreateVoucherBodyDto extends createZodDto(CreateVoucherBodySchema) {}
 export class UpdateVoucherBodyDto extends createZodDto(CreateVoucherBodySchema) {}
 
-
 export const getSzoneVouchersPaginatedQueryDto = z.object({
   page: z
     .string()
     .optional()
-    .transform((val) => (val ? parseInt(val, 10) : 1)) // chuyển kiểu dữ liệu sang int, nếu không có giá trị thì mặc định là 1
+    .transform(val => (val ? parseInt(val, 10) : 1)) // chuyển kiểu dữ liệu sang int, nếu không có giá trị thì mặc định là 1
     .pipe(z.number().int().positive()), // xác thực lại sau khi chuyển kiểu dữ liệu
-  
+
   limit: z
     .string()
     .optional()
-    .transform((val) => (val ? parseInt(val, 10) : 10)) // chuyển kiểu dữ liệu sang int, nếu không có giá trị thì mặc định là 10
+    .transform(val => (val ? parseInt(val, 10) : 10)) // chuyển kiểu dữ liệu sang int, nếu không có giá trị thì mặc định là 10
     .pipe(z.number().int().positive().max(10)),
-  
+
   search: z
     .string()
     .optional()
-    .transform((val) => val || undefined),
+    .transform(val => val || undefined),
 
   status: z.enum(['UPCOMING', 'ACTIVE', 'EXPIRED']).optional(),
 })
-export class GetSzoneVouchersPaginatedQueryDto extends createZodDto(getSzoneVouchersPaginatedQueryDto) {}
+export class GetSzoneVouchersPaginatedQueryDto extends createZodDto(
+  getSzoneVouchersPaginatedQueryDto,
+) {}
 
-//Get Eligible Shop Vouchers 
+//Get Eligible Shop Vouchers
 export const CartItemSchema = z.object({
   productId: z.uuid(),
   productVariantId: z.uuid(),
@@ -85,11 +83,15 @@ export const GetEligibleShopVouchersBodySchema = z.object({
   items: z.array(CartItemSchema).min(1),
 })
 
-export class GetEligibleShopVouchersBodyDto extends createZodDto(GetEligibleShopVouchersBodySchema) {}
+export class GetEligibleShopVouchersBodyDto extends createZodDto(
+  GetEligibleShopVouchersBodySchema,
+) {}
 
-// Get Eligible Szone Vouchers 
+// Get Eligible Szone Vouchers
 export const GetEligibleSzoneVouchersBodySchema = z.object({
   items: z.array(CartItemSchema).min(1),
 })
 
-export class GetEligibleSzoneVouchersBodyDto extends createZodDto(GetEligibleSzoneVouchersBodySchema) {}
+export class GetEligibleSzoneVouchersBodyDto extends createZodDto(
+  GetEligibleSzoneVouchersBodySchema,
+) {}

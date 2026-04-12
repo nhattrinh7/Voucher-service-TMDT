@@ -87,10 +87,7 @@ export class SagaVoucherConsumer extends BaseRetryConsumer {
   }
 
   @EventPattern('saga.confirm-vouchers')
-  async handleConfirmVouchers(
-    @Payload() data: ConfirmVouchersPayload,
-    @Ctx() context: RmqContext,
-  ) {
+  async handleConfirmVouchers(@Payload() data: ConfirmVouchersPayload, @Ctx() context: RmqContext) {
     await this.handleWithRetry(context, async () => {
       this.logger.log(`Event saga.confirm-vouchers received, sagaId=${data.sagaId}`)
       try {
@@ -113,16 +110,11 @@ export class SagaVoucherConsumer extends BaseRetryConsumer {
   }
 
   @EventPattern('saga.cancel-vouchers')
-  async handleCancelVouchers(
-    @Payload() data: CancelVouchersPayload,
-    @Ctx() context: RmqContext,
-  ) {
+  async handleCancelVouchers(@Payload() data: CancelVouchersPayload, @Ctx() context: RmqContext) {
     await this.handleWithRetry(context, async () => {
       this.logger.log(`Event saga.cancel-vouchers received, sagaId=${data.sagaId}`)
       try {
-        await this.commandBus.execute(
-          new SagaCancelVouchersCommand(data.userId, data.voucherIds),
-        )
+        await this.commandBus.execute(new SagaCancelVouchersCommand(data.userId, data.voucherIds))
       } catch (error: any) {
         this.logger.error(`Cancel vouchers failed: ${error.message}`)
       }

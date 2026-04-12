@@ -23,6 +23,6 @@ export class VoucherMapper {
       deletedAt: voucher.deletedAt,
       createdAt: voucher.createdAt,
       updatedAt: voucher.updatedAt,
-    } 
+    }
   }
 }

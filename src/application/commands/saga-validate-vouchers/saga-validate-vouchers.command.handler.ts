@@ -25,7 +25,9 @@ interface ValidateVouchersResult {
 }
 
 @CommandHandler(SagaValidateVouchersCommand)
-export class SagaValidateVouchersHandler implements ICommandHandler<SagaValidateVouchersCommand, ValidateVouchersResult> {
+export class SagaValidateVouchersHandler
+  implements ICommandHandler<SagaValidateVouchersCommand, ValidateVouchersResult>
+{
   constructor(
     @Inject(VOUCHER_REPOSITORY)
     private readonly voucherRepository: IVoucherRepository,
@@ -43,7 +45,7 @@ export class SagaValidateVouchersHandler implements ICommandHandler<SagaValidate
       const shopVoucherResults: ShopVoucherResult[] = []
 
       // Validate shop vouchers
-      for (const sv of (shopVouchers || [])) {
+      for (const sv of shopVouchers || []) {
         const voucher = await this.voucherRepository.findByIdWithDetails(sv.voucherId)
 
         if (!voucher) {
@@ -56,13 +58,19 @@ export class SagaValidateVouchersHandler implements ICommandHandler<SagaValidate
         }
 
         // Check usage limit — chỉ đếm CONFIRMED (RESERVED là của phiên checkout hiện tại)
-        const usageCount = await this.voucherUsageRepository.countByVoucherId(voucher.id, ['CONFIRMED'])
+        const usageCount = await this.voucherUsageRepository.countByVoucherId(voucher.id, [
+          'CONFIRMED',
+        ])
         if (usageCount >= voucher.usageLimit) {
           throw new Error(`Voucher ${voucher.code} đã hết lượt sử dụng`)
         }
 
         // Check per user limit — chỉ đếm CONFIRMED
-        const userUsageCount = await this.voucherUsageRepository.countByUserAndVoucher(userId, voucher.id, ['CONFIRMED'])
+        const userUsageCount = await this.voucherUsageRepository.countByUserAndVoucher(
+          userId,
+          voucher.id,
+          ['CONFIRMED'],
+        )
         if (userUsageCount >= voucher.perUserLimit) {
           throw new Error(`Bạn đã hết lượt dùng voucher ${voucher.code}`)
         }
@@ -73,7 +81,7 @@ export class SagaValidateVouchersHandler implements ICommandHandler<SagaValidate
 
         let discount = 0
         if (voucher.discountType === 'PERCENT') {
-          discount = Math.floor(sv.orderValue * voucher.discountValue / 100)
+          discount = Math.floor((sv.orderValue * voucher.discountValue) / 100)
           if (voucher.maxDiscountValue && discount > voucher.maxDiscountValue) {
             discount = voucher.maxDiscountValue
           }
@@ -103,13 +111,19 @@ export class SagaValidateVouchersHandler implements ICommandHandler<SagaValidate
         }
 
         // Chỉ đếm CONFIRMED
-        const usageCount = await this.voucherUsageRepository.countByVoucherId(voucher.id, ['CONFIRMED'])
+        const usageCount = await this.voucherUsageRepository.countByVoucherId(voucher.id, [
+          'CONFIRMED',
+        ])
         if (usageCount >= voucher.usageLimit) {
           throw new Error(`Szone voucher ${voucher.code} đã hết lượt`)
         }
 
         // Chỉ đếm CONFIRMED
-        const userUsageCount = await this.voucherUsageRepository.countByUserAndVoucher(userId, voucher.id, ['CONFIRMED'])
+        const userUsageCount = await this.voucherUsageRepository.countByUserAndVoucher(
+          userId,
+          voucher.id,
+          ['CONFIRMED'],
+        )
         if (userUsageCount >= voucher.perUserLimit) {
           throw new Error(`Bạn đã hết lượt dùng szone voucher ${voucher.code}`)
         }
@@ -120,7 +134,7 @@ export class SagaValidateVouchersHandler implements ICommandHandler<SagaValidate
 
         let discount = 0
         if (voucher.discountType === 'PERCENT') {
-          discount = Math.floor(szoneVoucher.orderValue * voucher.discountValue / 100)
+          discount = Math.floor((szoneVoucher.orderValue * voucher.discountValue) / 100)
           if (voucher.maxDiscountValue && discount > voucher.maxDiscountValue) {
             discount = voucher.maxDiscountValue
           }

@@ -20,12 +20,17 @@ import { GetSzoneVouchersQuery } from '~/application/queries/get-szone-vouchers/
 import { GetVoucherDetailByIdQuery } from '~/application/queries/get-voucher-detail-by-id/get-voucher-detail-by-id.query'
 import { GetEligibleShopVouchersQuery } from '~/application/queries/get-eligible-shop-vouchers/get-eligible-shop-vouchers.query'
 import { GetEligibleSzoneVouchersQuery } from '~/application/queries/get-eligible-szone-vouchers/get-eligible-szone-vouchers.query'
-import { CreateVoucherBodyDto, GetSzoneVouchersPaginatedQueryDto, UpdateVoucherBodyDto, GetEligibleShopVouchersBodyDto, GetEligibleSzoneVouchersBodyDto } from '~/presentation/dtos/voucher.dto'
+import {
+  CreateVoucherBodyDto,
+  GetSzoneVouchersPaginatedQueryDto,
+  UpdateVoucherBodyDto,
+  GetEligibleShopVouchersBodyDto,
+  GetEligibleSzoneVouchersBodyDto,
+} from '~/presentation/dtos/voucher.dto'
 import { CustomCacheInterceptor } from '~/infrastructure/cache/custom-cache.interceptor'
 import { CacheType } from '~/infrastructure/cache/cache-type.decorator'
 import { CacheResource } from '~/infrastructure/cache/cache-prefix.decorator'
 import { CACHE_TYPE, CACHE_RESOURCE } from '~/common/constants/cache.constant'
-
 
 @Controller('v1/vouchers')
 export class VoucherController {
@@ -39,32 +44,23 @@ export class VoucherController {
   @CacheType(CACHE_TYPE.LIST)
   @CacheResource(CACHE_RESOURCE.VOUCHERS)
   @CacheTTL(300_000) // 5 phút
-  async getShopVouchers(
-    @Query('shopId') shopId: string,
-  ): Promise<any> {
+  async getShopVouchers(@Query('shopId') shopId: string): Promise<any> {
     const vouchers = await this.queryBus.execute(new GetShopVouchersQuery(shopId))
 
     return { message: 'Get shop vouchers successful', data: vouchers }
   }
 
   @Get('/szone')
-  async getSzoneVouchersPaginated(
-    @Query() query: GetSzoneVouchersPaginatedQueryDto,
-  ): Promise<any> {
-    const result = await this.queryBus.execute(new GetSzoneVouchersQuery(
-      query.page,
-      query.limit,
-      query.status,
-      query.search,
-    ))
+  async getSzoneVouchersPaginated(@Query() query: GetSzoneVouchersPaginatedQueryDto): Promise<any> {
+    const result = await this.queryBus.execute(
+      new GetSzoneVouchersQuery(query.page, query.limit, query.status, query.search),
+    )
 
     return { message: 'Get zone vouchers successful', data: result }
   }
 
   @Post('/')
-  async createShopVoucher(
-    @Body() body: CreateVoucherBodyDto,
-  ): Promise<any> {
+  async createShopVoucher(@Body() body: CreateVoucherBodyDto): Promise<any> {
     await this.commandBus.execute(new CreateShopVoucherCommand(body))
 
     return { message: 'Create shop voucher successful' }
@@ -85,9 +81,7 @@ export class VoucherController {
   @CacheType(CACHE_TYPE.DETAIL)
   @CacheResource(CACHE_RESOURCE.VOUCHERS)
   @CacheTTL(300_000) // 5 phút
-  async getVoucherDetailById(
-    @Param('id') id: string,
-  ): Promise<any> {
+  async getVoucherDetailById(@Param('id') id: string): Promise<any> {
     const voucher = await this.queryBus.execute(new GetVoucherDetailByIdQuery(id))
 
     return { message: 'Get voucher detail successful', data: voucher }
@@ -110,7 +104,7 @@ export class VoucherController {
     @Body() body: GetEligibleShopVouchersBodyDto,
   ): Promise<any> {
     const vouchers = await this.queryBus.execute(
-      new GetEligibleShopVouchersQuery(userId, shopId, body.items)
+      new GetEligibleShopVouchersQuery(userId, shopId, body.items),
     )
 
     return { message: 'Get eligible shop vouchers successful', data: { vouchers } }
@@ -122,11 +116,9 @@ export class VoucherController {
     @Body() body: GetEligibleSzoneVouchersBodyDto,
   ): Promise<any> {
     const vouchers = await this.queryBus.execute(
-      new GetEligibleSzoneVouchersQuery(userId, body.items)
+      new GetEligibleSzoneVouchersQuery(userId, body.items),
     )
 
     return { message: 'Get eligible platform vouchers successful', data: { vouchers } }
   }
-
 }
-

@@ -50,7 +50,7 @@ export class Voucher extends AggregateRoot {
       new Date(),
       new Date(),
     )
-    
+
     return shop
   }
 

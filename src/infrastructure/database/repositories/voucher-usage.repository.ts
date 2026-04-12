@@ -49,8 +49,8 @@ export class VoucherUsageRepository implements IVoucherUsageRepository {
   }
 
   async countByVoucherId(
-    voucherId: string, 
-    statuses: ('RESERVED' | 'CONFIRMED' | 'CANCELLED')[] = ['RESERVED', 'CONFIRMED']
+    voucherId: string,
+    statuses: ('RESERVED' | 'CONFIRMED' | 'CANCELLED')[] = ['RESERVED', 'CONFIRMED'],
   ): Promise<number> {
     return await this.prisma.voucherUsage.count({
       where: {
@@ -61,9 +61,9 @@ export class VoucherUsageRepository implements IVoucherUsageRepository {
   }
 
   async countByUserAndVoucher(
-    userId: string, 
+    userId: string,
     voucherId: string,
-    statuses: ('RESERVED' | 'CONFIRMED' | 'CANCELLED')[] = ['RESERVED', 'CONFIRMED']
+    statuses: ('RESERVED' | 'CONFIRMED' | 'CANCELLED')[] = ['RESERVED', 'CONFIRMED'],
   ): Promise<number> {
     return await this.prisma.voucherUsage.count({
       where: {
@@ -78,7 +78,7 @@ export class VoucherUsageRepository implements IVoucherUsageRepository {
   // count trả về 1 số duy nhất cho 1 điều kiện. Ví dụ: "voucher A có bao nhiêu usage?" → 5, dùng count cho batch sẽ phải gọi N lần
   async countByVoucherIds(
     voucherIds: string[],
-    statuses: ('RESERVED' | 'CONFIRMED' | 'CANCELLED')[] = ['RESERVED', 'CONFIRMED']
+    statuses: ('RESERVED' | 'CONFIRMED' | 'CANCELLED')[] = ['RESERVED', 'CONFIRMED'],
   ): Promise<Map<string, number>> {
     const results = await this.prisma.voucherUsage.groupBy({
       by: ['voucherId'],
@@ -99,7 +99,7 @@ export class VoucherUsageRepository implements IVoucherUsageRepository {
   async countByUserAndVoucherIds(
     userId: string,
     voucherIds: string[],
-    statuses: ('RESERVED' | 'CONFIRMED' | 'CANCELLED')[] = ['RESERVED', 'CONFIRMED']
+    statuses: ('RESERVED' | 'CONFIRMED' | 'CANCELLED')[] = ['RESERVED', 'CONFIRMED'],
   ): Promise<Map<string, number>> {
     const results = await this.prisma.voucherUsage.groupBy({
       by: ['voucherId'],
