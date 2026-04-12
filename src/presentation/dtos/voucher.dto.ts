@@ -13,16 +13,16 @@ export const VoucherSchema = z.object({
   discountValue: z.number().nonnegative(),
   minOrderValue: z.number().nonnegative(),
   maxDiscountValue: z.number().nonnegative().optional().nullable(),
-  startDate: z.coerce.date(),
-  endDate: z.coerce.date(),
+  startDate: z.string(),
+  endDate: z.string(),
   usageLimit: z.number().nonnegative(),
   perUserLimit: z.number().nonnegative(),
   scope: z.enum(VoucherScopeType),
   isDeleted: z.boolean(),
   deletedBy: z.uuid().nullable(),
-  deletedAt: z.coerce.date().nullable(),
-  createdAt: z.coerce.date(),
-  updatedAt: z.coerce.date(),
+  deletedAt: z.string().nullable(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
 })
 export class VoucherDto extends createZodDto(VoucherSchema) {}
 
@@ -95,3 +95,4 @@ export const GetEligibleSzoneVouchersBodySchema = z.object({
 export class GetEligibleSzoneVouchersBodyDto extends createZodDto(
   GetEligibleSzoneVouchersBodySchema,
 ) {}
+
