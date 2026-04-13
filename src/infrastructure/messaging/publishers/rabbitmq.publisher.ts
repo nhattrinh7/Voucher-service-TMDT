@@ -23,17 +23,17 @@ export class RabbitMQPublisher implements IMessagePublisher {
   }
 
   publish<T>(pattern: string, event: T): void {
-    this.logger.debug(`[${getKongRequestId()}] Emit ${pattern} → notification-service`)
+    this.logger.log(`[${getKongRequestId()}] Emit ${pattern} → notification-service`)
     this.notificationClient.emit(pattern, this.buildRecord(event))
   }
 
   emitToSagaOrchestrator<T>(pattern: string, event: T): void {
-    this.logger.debug(`[${getKongRequestId()}] Emit ${pattern} → saga-orchestrator`)
+    this.logger.log(`[${getKongRequestId()}] Emit ${pattern} → saga-orchestrator`)
     this.sagaClient.emit(pattern, this.buildRecord(event))
   }
 
   async sendToCatalogService<T, R = any>(pattern: string, data: T): Promise<R> {
-    this.logger.debug(`[${getKongRequestId()}] Send ${pattern} → catalog-service`)
+    this.logger.log(`[${getKongRequestId()}] Send ${pattern} → catalog-service`)
     const response$ = this.catalogClient.send<R, T>(pattern, this.buildRecord(data) as any)
     return lastValueFrom(response$)
   }
