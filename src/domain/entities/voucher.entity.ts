@@ -39,8 +39,8 @@ export class Voucher extends AggregateRoot {
       props.discountValue,
       props.minOrderValue,
       props.maxDiscountValue || null,
-      props.startDate,
-      props.endDate,
+      new Date(props.startDate),
+      new Date(props.endDate),
       props.usageLimit,
       props.perUserLimit,
       props.scope,
@@ -62,8 +62,8 @@ export class Voucher extends AggregateRoot {
     this.discountValue = props.discountValue
     this.minOrderValue = props.minOrderValue
     this.maxDiscountValue = props.maxDiscountValue || null
-    this.startDate = props.startDate
-    this.endDate = props.endDate
+    this.startDate = new Date(props.startDate)
+    this.endDate = new Date(props.endDate)
     this.usageLimit = props.usageLimit
     this.perUserLimit = props.perUserLimit
     this.scope = props.scope

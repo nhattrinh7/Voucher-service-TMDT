@@ -13,16 +13,16 @@ export class VoucherMapper {
       discountValue: voucher.discountValue,
       minOrderValue: voucher.minOrderValue,
       maxDiscountValue: voucher.maxDiscountValue,
-      startDate: voucher.startDate,
-      endDate: voucher.endDate,
+      startDate: voucher.startDate.toISOString(),
+      endDate: voucher.endDate.toISOString(),
       usageLimit: voucher.usageLimit,
       perUserLimit: voucher.perUserLimit,
       scope: voucher.scope,
       isDeleted: voucher.isDeleted,
       deletedBy: voucher.deletedBy,
-      deletedAt: voucher.deletedAt,
-      createdAt: voucher.createdAt,
-      updatedAt: voucher.updatedAt,
+      deletedAt: voucher.deletedAt?.toISOString() ?? null,
+      createdAt: voucher.createdAt.toISOString(),
+      updatedAt: voucher.updatedAt.toISOString(),
     }
   }
 }
